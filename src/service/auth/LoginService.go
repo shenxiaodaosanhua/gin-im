@@ -2,6 +2,7 @@ package auth
 
 import (
 	"errors"
+	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
 	"my-im/src/model"
 )
@@ -63,4 +64,24 @@ func (s *LoginService) Register(mobile, password string) (token string, err erro
 	}
 
 	return token, err
+}
+
+//检查token
+func CheckAuth(token string) (user model.UserClaim, err error) {
+	sec := []byte("acb123")
+
+	//u := &model.UserClaim{}
+	getToken, err := jwt.ParseWithClaims(token, &user, func(token *jwt.Token) (interface{}, error) {
+		return sec, nil
+	})
+
+	if err != nil {
+		return model.UserClaim{}, err
+	}
+
+	if !getToken.Valid {
+		return model.UserClaim{}, errors.New("token解析错误")
+	}
+
+	return user, nil
 }
