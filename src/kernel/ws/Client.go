@@ -1,20 +1,24 @@
 package ws
 
 import (
+	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
+	"my-im/src/model"
 	"time"
 )
 
 type Client struct {
 	conn      *websocket.Conn
+	user      *model.UserClaim
 	readChan  chan *Message
 	closeChan chan struct{}
 }
 
-func NewClient(conn *websocket.Conn) *Client {
+func NewClient(conn *websocket.Conn, user *model.UserClaim) *Client {
 	return &Client{
 		conn:      conn,
+		user:      user,
 		readChan:  make(chan *Message),
 		closeChan: make(chan struct{}),
 	}
@@ -25,7 +29,7 @@ func (c *Client) Ping(waitTime time.Duration) {
 		time.Sleep(waitTime)
 		err := c.conn.WriteMessage(websocket.PingMessage, []byte("ping"))
 		if err != nil {
-			ClientMap.Remove(c.conn)
+			ClientMap.Remove(c.user)
 			return
 		}
 	}
@@ -36,9 +40,9 @@ func (c *Client) ReadLoop() {
 		var msg *Message
 		err := c.conn.ReadJSON(&msg)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err.Error())
 			c.conn.Close()
-			ClientMap.Remove(c.conn)
+			ClientMap.Remove(c.user)
 			c.closeChan <- struct{}{}
 			break
 		}
@@ -62,11 +66,11 @@ loop:
 
 func (c *Client) To(msg *Message) {
 	toClient := ClientMap.GetClient(msg.To)
+	if toClient == nil {
+		fmt.Println("获取用户失败")
+		return
+	}
 	toClient.Send(msg)
-}
-
-func (c *Client) ToMe(message *Message) {
-	c.readChan <- message
 }
 
 func (c *Client) HandlerMessage(msg *Message) {

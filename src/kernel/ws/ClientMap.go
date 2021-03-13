@@ -20,7 +20,7 @@ func init() {
 //保存上线用户
 func (c *ClientMapStruct) Store(user *model.UserClaim, conn *websocket.Conn) {
 	key := user.Mobile
-	client := NewClient(conn)
+	client := NewClient(conn, user)
 	c.data.Store(key, client)
 	go client.Ping(time.Second * 2)
 	go client.ReadLoop()
@@ -28,8 +28,8 @@ func (c *ClientMapStruct) Store(user *model.UserClaim, conn *websocket.Conn) {
 }
 
 //删除下线用户
-func (c *ClientMapStruct) Remove(conn *websocket.Conn) {
-	c.data.Delete(conn.RemoteAddr().String())
+func (c *ClientMapStruct) Remove(user *model.UserClaim) {
+	c.data.Delete(user.Mobile)
 }
 
 //向所有人发送消息
