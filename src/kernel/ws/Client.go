@@ -1,6 +1,8 @@
 package ws
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"log"
@@ -14,6 +16,18 @@ type Client struct {
 	readChan  chan *Message
 	closeChan chan struct{}
 }
+
+const (
+	writeWait      = 10 * time.Second
+	pongWait       = 60 * time.Second
+	pingPeriod     = (pongWait * 9) / 10
+	maxMessageSize = 512
+)
+
+var (
+	newline = []byte{'\n'}
+	space   = []byte{' '}
+)
 
 func NewClient(conn *websocket.Conn, user *model.UserClaim) *Client {
 	return &Client{
@@ -36,9 +50,25 @@ func (c *Client) Ping(waitTime time.Duration) {
 }
 
 func (c *Client) ReadLoop() {
+	defer c.conn.Close()
+	c.conn.SetReadLimit(maxMessageSize)
+	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	c.conn.SetPongHandler(func(string) error { c.conn.SetReadDeadline(time.Now().Add(pongWait)); return nil })
+
 	for true {
 		var msg *Message
-		err := c.conn.ReadJSON(&msg)
+		_, message, err := c.conn.ReadMessage()
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				c.conn.Close()
+				ClientMap.Remove(c.user)
+				c.closeChan <- struct{}{}
+			}
+			fmt.Println(err.Error())
+			break
+		}
+		message = bytes.TrimSpace(bytes.Replace(message, newline, space, -1))
+		err = json.Unmarshal(message, &msg)
 		if err != nil {
 			fmt.Println(err.Error())
 			c.conn.Close()
