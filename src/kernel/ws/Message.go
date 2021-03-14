@@ -7,8 +7,8 @@ const (
 )
 
 type Message struct {
-	Form    string
-	To      string
-	Content string
-	Type    int
+	Form    string `json:"form"`
+	To      string `json:"to"`
+	Content string `json:"content"`
+	Type    int    `json:"type"`
 }
