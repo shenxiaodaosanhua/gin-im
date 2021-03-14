@@ -1,1 +1,1 @@
-  一个基于GoLang的Im练手项目
+GoLang的Im项目
