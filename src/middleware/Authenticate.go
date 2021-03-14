@@ -26,3 +26,7 @@ func (a *Authenticate) OnRequest(ctx *gin.Context) error {
 	ctx.Set("user", user)
 	return nil
 }
+
+func (a *Authenticate) OnResponse(ctx *gin.Context) error {
+	return nil
+}

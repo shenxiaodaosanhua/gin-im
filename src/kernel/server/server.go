@@ -44,11 +44,18 @@ func (s *Server) Attach(f Fairing) *Server {
 	s.Use(func(ctx *gin.Context) {
 		err := f.OnRequest(ctx)
 		if err != nil {
+			ctx.AbortWithStatusJSON(401, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
+		ctx.Next()
+		err = f.OnResponse(ctx)
+		if err != nil {
 			ctx.AbortWithStatusJSON(400, gin.H{
 				"error": err.Error(),
 			})
-		} else {
-			ctx.Next()
+			return
 		}
 	})
 

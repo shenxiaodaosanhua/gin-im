@@ -13,7 +13,7 @@ func NewIndexController() *IndexController {
 }
 
 func (c *IndexController) Build(s *server.Server) {
-	s.Handle("GET", "/", c.Index)
+	s.Handle("GET", "/index", c.Index)
 }
 
 func (c *IndexController) Index(ctx *gin.Context) {

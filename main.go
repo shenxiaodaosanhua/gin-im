@@ -12,7 +12,9 @@ import (
 func main() {
 	orm.InitDb()
 
-	server.Ignite().Mount(
+	server.Ignite().Attach(
+		middleware.NewCors(),
+	).Mount(
 		"v1",
 		auth.NewLoginController(),
 	).Attach(
