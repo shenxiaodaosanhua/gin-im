@@ -5,23 +5,24 @@ import (
 	"my-im/src/service/auth"
 )
 
-func Auth() gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		authToken := ctx.GetHeader("Authorization")
-		if authToken == "" {
-			authToken = ctx.Query("Authorization")
-		}
+type Authenticate struct {
+}
 
-		user, err := auth.CheckAuth(authToken)
-		if err != nil {
-			ctx.JSON(402, gin.H{
-				"code":    402,
-				"message": err.Error(),
-			})
-			return
-		}
+func NewAuthenticate() *Authenticate {
+	return &Authenticate{}
+}
 
-		ctx.Set("user", user)
-		ctx.Next()
+func (a *Authenticate) OnRequest(ctx *gin.Context) error {
+	authToken := ctx.GetHeader("Authorization")
+	if authToken == "" {
+		authToken = ctx.Query("Authorization")
 	}
+
+	user, err := auth.CheckAuth(authToken)
+	if err != nil {
+		return err
+	}
+
+	ctx.Set("user", user)
+	return nil
 }

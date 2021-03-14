@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
+	"my-im/src/kernel/orm"
 	"my-im/src/model"
 )
 
@@ -13,7 +14,7 @@ type LoginService struct {
 
 func NewLoginService() *LoginService {
 	return &LoginService{
-		DB: model.DB,
+		DB: orm.DB,
 	}
 }
 

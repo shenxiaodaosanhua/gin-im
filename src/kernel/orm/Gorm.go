@@ -1,4 +1,4 @@
-package model
+package orm
 
 import (
 	"gorm.io/driver/mysql"

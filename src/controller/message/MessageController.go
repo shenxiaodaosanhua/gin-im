@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
+	"my-im/src/kernel/server"
 	"my-im/src/kernel/ws"
 	"my-im/src/model"
 	"net/http"
@@ -20,6 +21,10 @@ var upgrader = websocket.Upgrader{
 
 func NewMessageController() *MessageController {
 	return &MessageController{}
+}
+
+func (c *MessageController) Build(server *server.Server) {
+	server.Handle("GET", "/ws", c.Ws)
 }
 
 func (c *MessageController) Ws(ctx *gin.Context) {
